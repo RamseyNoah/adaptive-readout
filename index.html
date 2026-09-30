@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Adaptive vs. Fixed Readout in Neutral-Atom Arrays</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEF2F4;--panel:#F8FAFB;--ink:#18243A;--muted:#56637A;--rule:rgba(24,36,58,.14);--grid:rgba(24,36,58,.07);
+  --bright:#C97A12;--dark:#3F6E9E;--fixed:#AE2F5B;--focus:#3F6E9E;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0F1726;--panel:#152035;--ink:#E4EAF3;--muted:#98A6BD;--rule:rgba(228,234,243,.16);--grid:rgba(228,234,243,.07);
+  --bright:#F0A43C;--dark:#7FA8D8;--fixed:#E2709A;--focus:#7FA8D8;}}
+:root[data-theme="dark"]{
+  --paper:#0F1726;--panel:#152035;--ink:#E4EAF3;--muted:#98A6BD;--rule:rgba(228,234,243,.16);--grid:rgba(228,234,243,.07);
+  --bright:#F0A43C;--dark:#7FA8D8;--fixed:#E2709A;--focus:#7FA8D8;}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Source Serif 4",Georgia,"Times New Roman",serif;font-size:18px;line-height:1.6}
+main{max-width:860px;margin:0 auto;padding:40px 22px 64px}
+h1{font-weight:600;font-size:clamp(30px,5vw,44px);line-height:1.12;letter-spacing:-.01em;margin:0 0 10px}
+.lede{color:var(--muted);max-width:62ch;margin:0 0 10px}
+.byline{font-size:13.5px;color:var(--muted);margin:0 0 28px}
+h2{font-weight:600;font-size:22px;margin:40px 0 8px}
+p{max-width:68ch}
+.ui,.ui *{font-family:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+figure{margin:0}
+.fig{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:14px 14px 8px;overflow-x:auto}
+.fig svg{display:block;width:100%;height:auto;min-width:520px}
+figcaption{font-size:15px;color:var(--muted);margin:8px 2px 0;max-width:70ch}
+.axis{stroke:var(--rule);stroke-width:1}
+.gridl{stroke:var(--grid);stroke-width:1}
+.tick{fill:var(--muted);font-size:11px;font-family:"Public Sans",system-ui,sans-serif}
+.lab{fill:var(--muted);font-size:12px;font-family:"Public Sans",system-ui,sans-serif}
+.tb{stroke:var(--bright);fill:none;stroke-width:1.6}
+.td{stroke:var(--dark);fill:none;stroke-width:1.6}
+.hb{fill:var(--bright);fill-opacity:.22;stroke:var(--bright);stroke-width:1.2}
+.hd{fill:var(--dark);fill-opacity:.22;stroke:var(--dark);stroke-width:1.2}
+.bnd{stroke:var(--ink);stroke-opacity:.45;stroke-dasharray:5 4}
+.fx{stroke:var(--fixed);stroke-width:1.6;stroke-dasharray:6 4}
+.aw{stroke:var(--ink);stroke-width:1.4}
+.fxt{fill:var(--fixed);font-size:12px;font-family:"Public Sans",system-ui,sans-serif}
+.awt{fill:var(--ink);font-size:12px;font-family:"Public Sans",system-ui,sans-serif}
+.bt{fill:var(--bright);font-size:12px;font-family:"Public Sans",system-ui,sans-serif}
+.dtx{fill:var(--dark);font-size:12px;font-family:"Public Sans",system-ui,sans-serif}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px 28px;margin:22px 0 8px}
+.ctl label{display:flex;justify-content:space-between;gap:12px;font-size:14px;color:var(--ink);margin-bottom:4px}
+.ctl output{font-variant-numeric:tabular-nums;color:var(--muted)}
+.ctl small{display:block;font-size:12.5px;color:var(--muted);line-height:1.4;margin-top:2px}
+input[type=range]{width:100%;accent-color:var(--dark)}
+input[type=range]:focus-visible,button:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+.bar{display:flex;align-items:center;gap:14px;margin:6px 0 0;flex-wrap:wrap}
+button{font:500 14px "Public Sans",system-ui,sans-serif;color:var(--ink);background:transparent;border:1px solid var(--rule);border-radius:999px;padding:7px 16px;cursor:pointer}
+button:hover{border-color:var(--ink)}
+.status{font-size:13px;color:var(--muted)}
+.verdict{font-size:20px;line-height:1.5;margin:26px 0 14px;max-width:64ch}
+.verdict b{font-weight:600}
+table{border-collapse:collapse;width:100%;font-size:15px}
+.tablewrap{overflow-x:auto;border-top:1px solid var(--rule)}
+td{padding:9px 4px;border-bottom:1px solid var(--rule);vertical-align:top}
+td:last-child{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:16px}
+.note{font-size:14.5px;color:var(--muted);border-top:1px solid var(--rule);margin-top:44px;padding-top:14px}
+@media (max-width:560px){body{font-size:17px}main{padding:28px 16px 48px}.verdict{font-size:18px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<h1>Adaptive vs. Fixed Readout in Neutral-Atom Arrays</h1>
+<p class="lede">A toy model of fluorescence readout in a neutral-atom array. It compares a fixed exposure against adaptive readout, which accumulates evidence frame by frame and decides each site as soon as it is confident.</p>
+<p class="byline ui">By Ramsey Noah, September 2026. Modeling choices and conclusions are my own; the code was written with an AI coding assistant.</p>
+
+<figure>
+  <div class="fig"><svg id="walk" viewBox="0 0 720 300" role="img" aria-label="Evidence accumulated over time for sample bright and dark atoms"></svg></div>
+  <figcaption>Each line is one simulated site. Photons push the evidence up; every frame without one pushes it down a little. A site is decided when its line crosses a dashed boundary. Amber sites are truly bright, blue sites truly dark.</figcaption>
+</figure>
+
+<div class="controls ui" id="controls"></div>
+<div class="bar ui"><button id="rerun" type="button">Run again with new noise</button><span class="status" id="status" aria-live="polite"></span></div>
+
+<p class="verdict" id="verdict"></p>
+<div class="tablewrap ui"><table id="results" aria-label="Simulation results"></table></div>
+
+<h2>How long sites take to decide</h2>
+<figure>
+  <div class="fig"><svg id="hist" viewBox="0 0 720 280" role="img" aria-label="Distribution of decision times for bright and dark sites"></svg></div>
+  <figcaption>Decision times for adaptive readout, with the fixed window that achieves the same error, and the time an array of the chosen size waits for its slowest site.</figcaption>
+</figure>
+
+<h2>What the model says</h2>
+<p>Early stopping cuts the average. Bright atoms announce themselves within a few photons, but a dark atom can only be confirmed by photons that never arrive, so dark sites set the pace.</p>
+<p>An array waits for its slowest site. Decision times have a long tail, and in a globally imaged array the next step cannot start until every site is done. The average speedup mostly disappears at the array level unless decided sites can be released individually, for example by switching off their light to cut heating.</p>
+<p>Splitting the exposure into frames only helps if atoms change state during imaging. Without that, the summed photon count already carries all the information, and every extra camera read adds noise.</p>
+<p>Everything on this page scales with the detected photon rate. Doubling collection efficiency roughly halves every time shown here, which is why optics, not decision logic, is where large speedups live.</p>
+
+<p class="note">Model assumptions: Poisson photon counts, Gaussian camera read noise on every frame, independent sites, equal numbers of bright and dark sites, and no atom loss or depumping during imaging. The fixed window uses a single camera read with the best possible threshold. Default values are illustrative and are not taken from any lab's apparatus. Each run simulates 8,000 bright and 8,000 dark sites.</p>
+</main>
+<script>
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function makeRng(seed){const u=mulberry32(seed);let spare=null;
+  return{u,gauss(){if(spare!==null){const s=spare;spare=null;return s}let r,a,b;do{a=2*u()-1;b=2*u()-1;r=a*a+b*b}while(r>=1||r===0);const m=Math.sqrt(-2*Math.log(r)/r);spare=b*m;return a*m},
+  pois(mu){if(mu<=0)return 0;if(mu>30){return Math.max(0,Math.round(mu+Math.sqrt(mu)*this.gauss()))}const L=Math.exp(-mu);let k=0,p=1;do{k++;p*=u()}while(p>L);return k-1}}}
+function lgam(n){let s=0;for(let i=2;i<=n;i++)s+=Math.log(i);return s}
+const LGT=[];for(let i=0;i<4000;i++)LGT.push(i<2?0:LGT[i-1]+Math.log(i));
+function poisPmf(mu,nmax){const a=new Float64Array(nmax+1);for(let n=0;n<=nmax;n++)a[n]=Math.exp(-mu+n*Math.log(Math.max(mu,1e-300))-LGT[n]);return a}
+function erfc(x){const z=Math.abs(x),t=1/(1+0.5*z);const r=t*Math.exp(-z*z-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+t*(-0.82215223+t*0.17087277)))))))));return x>=0?r:2-r}
+function Phi(x){return 0.5*erfc(-x/Math.SQRT2)}
+function simulate(p){
+  const {lb,lbg,dt,sig,alpha,M,seed}=p; const s=Math.max(sig,0.05);
+  const N=8000, Tmax=30, nfr=Math.min(Math.ceil(Tmax/dt),600);
+  const muB=(lb+lbg)*dt, muD=lbg*dt;
+  const nmax=Math.ceil(muB+10*Math.sqrt(muB)+12);
+  const pB=poisPmf(muB,nmax), pD=poisPmf(muD,nmax);
+  const x0=-6*s-1, x1=nmax+6*s, step=0.01, nt=Math.ceil((x1-x0)/step)+1;
+  const tab=new Float64Array(nt);
+  for(let i=0;i<nt;i++){const x=x0+i*step;let sb=0,sd=0;
+    for(let n=0;n<=nmax;n++){const g=Math.exp(-0.5*((x-n)/s)**2);sb+=pB[n]*g;sd+=pD[n]*g}
+    tab[i]=Math.log(sb+1e-300)-Math.log(sd+1e-300)}
+  const llr=x=>{let i=(x-x0)/step;if(i<0)i=0;if(i>nt-1)i=nt-1;return tab[Math.round(i)]};
+  const A=Math.log((1-alpha)/alpha), B=Math.log(alpha/(1-alpha));
+  const rng=makeRng(seed);
+  const res={tb:new Float64Array(N),td:new Float64Array(N),traces:[]};
+  let errB=0,errD=0;
+  for(const bright of [1,0]){const mu=bright?muB:muD, T=bright?res.tb:res.td;
+    for(let i=0;i<N;i++){let L=0,k=0,dec=-1;const keep=i<7;const tr=keep?[0]:null;
+      for(k=1;k<=nfr;k++){const x=rng.pois(mu)+sig*rng.gauss();L+=llr(x);if(keep)tr.push(L);
+        if(L>=A){dec=1;break}if(L<=B){dec=0;break}}
+      if(dec<0){dec=L>0?1:0;k=nfr}
+      T[i]=k*dt; if(bright&&dec===0)errB++; if(!bright&&dec===1)errD++;
+      if(keep)res.traces.push({bright,pts:tr})}}
+  const errS=0.5*(errB+errD)/N;
+  // fixed window: single read at end, optimal threshold (analytic)
+  const curve=[]; let Tfix=null; const target=Math.max(errS,0.5/N);
+  for(let k=1;k<=nfr;k++){const T=k*dt, mb=(lb+lbg)*T, md=lbg*T, nm=Math.ceil(mb+10*Math.sqrt(mb)+12);
+    const qb=poisPmf(mb,nm), qd=poisPmf(md,nm);
+    const hstar=(mb-md)/Math.log(Math.max(mb,1e-9)/Math.max(md,1e-9));
+    let best=1;for(let h=Math.max(-1,hstar-4);h<=hstar+4;h+=0.05){let fb=0,fd=0;
+      for(let n=0;n<=nm;n++){const c=Phi((h-n)/s);fb+=qb[n]*c;fd+=qd[n]*(1-c)}
+      const e=0.5*(fb+fd);if(e<best)best=e}
+    curve.push([T,best]); if(Tfix===null&&best<=target)Tfix=T; if(best<1e-7)break}
+  const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
+  const mb_=mean(res.tb), md_=mean(res.td);
+  // array wait: expected max over M sites (half bright, half dark)
+  const R=200;let acc=0;const h=Math.max(1,Math.floor(M/2));
+  for(let r=0;r<R;r++){let mx=0;for(let j=0;j<h;j++){const a=res.tb[(rng.u()*N)|0],b=res.td[(rng.u()*N)|0];if(a>mx)mx=a;if(b>mx)mx=b}acc+=mx}
+  const arr=acc/R;
+  let over=0;if(Tfix!==null){for(const t of res.tb)if(t>Tfix)over++;for(const t of res.td)if(t>Tfix)over++}
+  return Object.assign(res,{errS,errFloor:errS<0.5/N,A,B,curve,Tfix,meanB:mb_,meanD:md_,meanAll:0.5*(mb_+md_),arrayWait:arr,fracOver:over/(2*N),N,Tmax})}
+
+
+const ALPHAS=[1e-3,2e-3,5e-3,1e-2,2e-2], SIZES=[10,100,1000,10000];
+const CTL=[
+ {id:'lb',label:'Detected photons, bright site',unit:'per ms',min:1,max:20,step:0.5,val:5,fmt:v=>v.toFixed(1),help:'Set by scattering rate and collection efficiency.'},
+ {id:'lbg',label:'Background photons',unit:'per ms',min:0,max:1,step:0.05,val:0.2,fmt:v=>v.toFixed(2),help:'Stray light and neighbor crosstalk landing on a dark site.'},
+ {id:'dt',label:'Frame time',unit:'ms',min:0.05,max:1,step:0.05,val:0.2,fmt:v=>v.toFixed(2),help:'How often adaptive readout updates its decision.'},
+ {id:'sig',label:'Camera read noise',unit:'e⁻ per frame',min:0,max:1,step:0.05,val:0.4,fmt:v=>v.toFixed(2),help:'Paid once per frame, so shorter frames cost more of it.'},
+ {id:'ai',label:'Target error per site',unit:'',min:0,max:4,step:1,val:0,fmt:i=>ALPHAS[i].toExponential(0).replace('e-','×10⁻').replace(/(\d)$/,'$1'),help:'Chance of calling a site the wrong state.'},
+ {id:'mi',label:'Sites in the array',unit:'',min:0,max:3,step:1,val:2,fmt:i=>SIZES[i].toLocaleString(),help:'Everyone waits for the slowest one.'}];
+const st={};let seed=7,timer=null;
+const box=document.getElementById('controls');
+for(const c of CTL){st[c.id]=c.val;const d=document.createElement('div');d.className='ctl';
+ d.innerHTML=`<label for="${c.id}"><span>${c.label}</span><output id="${c.id}o"></output></label><input type="range" id="${c.id}" min="${c.min}" max="${c.max}" step="${c.step}" value="${c.val}"><small>${c.help}</small>`;
+ box.appendChild(d);const inp=d.querySelector('input'),out=d.querySelector('output');
+ const show=()=>{out.textContent=c.fmt(+inp.value)+(c.unit?' '+c.unit:'')};show();
+ inp.addEventListener('input',()=>{st[c.id]=+inp.value;show();clearTimeout(timer);timer=setTimeout(run,160)})}
+document.getElementById('rerun').addEventListener('click',()=>{seed=(seed*1103515245+12345)>>>0;run()});
+const NS='http://www.w3.org/2000/svg';
+function el(tag,attrs,parent,text){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!==undefined)e.textContent=text;if(parent)parent.appendChild(e);return e}
+function frame(svg,W,H,m,xd,yd,xl,yl,yt){svg.innerHTML='';
+ const X=v=>m.l+(v-xd[0])/(xd[1]-xd[0])*(W-m.l-m.r), Y=v=>H-m.b-(v-yd[0])/(yd[1]-yd[0])*(H-m.t-m.b);
+ const nice=(a,b,n)=>{const r=(b-a)/n,p=Math.pow(10,Math.floor(Math.log10(r))),f=r/p,s=(f<1.5?1:f<3?2:f<7?5:10)*p;const out=[];for(let v=Math.ceil(a/s)*s;v<=b+1e-9;v+=s)out.push(+v.toFixed(10));return out};
+ for(const v of nice(xd[0],xd[1],6)){el('line',{x1:X(v),x2:X(v),y1:m.t,y2:H-m.b,class:'gridl'},svg);el('text',{x:X(v),y:H-m.b+16,'text-anchor':'middle',class:'tick'},svg,String(+v.toFixed(2)))}
+ for(const v of (yt||nice(yd[0],yd[1],4))){el('line',{x1:m.l,x2:W-m.r,y1:Y(v),y2:Y(v),class:'gridl'},svg);el('text',{x:m.l-6,y:Y(v)+4,'text-anchor':'end',class:'tick'},svg,String(+v.toFixed(3)))}
+ el('line',{x1:m.l,x2:W-m.r,y1:H-m.b,y2:H-m.b,class:'axis'},svg);el('line',{x1:m.l,x2:m.l,y1:m.t,y2:H-m.b,class:'axis'},svg);
+ el('text',{x:(m.l+W-m.r)/2,y:H-6,'text-anchor':'middle',class:'lab'},svg,xl);
+ el('text',{x:14,y:(m.t+H-m.b)/2,'text-anchor':'middle',class:'lab',transform:`rotate(-90 14 ${(m.t+H-m.b)/2})`},svg,yl);
+ return{X,Y}}
+function drawWalk(r,p){const svg=document.getElementById('walk'),W=720,H=300,m={l:52,r:18,t:16,b:40};
+ let tmax=0;for(const t of r.traces)tmax=Math.max(tmax,(t.pts.length-1)*p.dt);
+ tmax=Math.max(tmax,(r.Tfix||0)*1.1);tmax=Math.min(Math.max(tmax,1),r.Tmax);
+ const yd=[r.B-1.5,r.A+1.5];const {X,Y}=frame(svg,W,H,m,[0,tmax],yd,'time (ms)','evidence for bright (log likelihood ratio)');
+ el('line',{x1:m.l,x2:W-m.r,y1:Y(r.A),y2:Y(r.A),class:'bnd'},svg);el('text',{x:W-m.r-4,y:Y(r.A)-6,'text-anchor':'end',class:'bt'},svg,'decide bright');
+ el('line',{x1:m.l,x2:W-m.r,y1:Y(r.B),y2:Y(r.B),class:'bnd'},svg);el('text',{x:W-m.r-4,y:Y(r.B)+15,'text-anchor':'end',class:'dtx'},svg,'decide dark');
+ for(const t of r.traces){const d=t.pts.map((v,i)=>`${i?'L':'M'}${X(i*p.dt).toFixed(1)},${Y(Math.max(yd[0],Math.min(yd[1],v))).toFixed(1)}`).join('');el('path',{d,class:t.bright?'tb':'td'},svg)}
+ if(r.Tfix&&r.Tfix<=tmax){el('line',{x1:X(r.Tfix),x2:X(r.Tfix),y1:m.t,y2:H-m.b,class:'fx'},svg);el('text',{x:X(r.Tfix)-6,y:Y((r.A+r.B)/2)+4,'text-anchor':'end',class:'fxt'},svg,'fixed window')}}
+function drawHist(r,p,M){const svg=document.getElementById('hist'),W=720,H=280,m={l:52,r:18,t:22,b:40};
+ const all=Array.from(r.tb).concat(Array.from(r.td)).sort((a,b)=>a-b);const q=all[Math.floor(all.length*0.999)];
+ let xmax=Math.max(q,(r.Tfix||0)*1.25,r.arrayWait*1.08);xmax=Math.min(xmax,r.Tmax);
+ const bw=p.dt*Math.max(1,Math.round((xmax/40)/p.dt)),nb=Math.ceil(xmax/bw),hb=new Array(nb).fill(0),hd=new Array(nb).fill(0);
+ for(const t of r.tb){const i=Math.min(nb-1,Math.floor((t-1e-9)/bw));hb[i]++}for(const t of r.td){const i=Math.min(nb-1,Math.floor((t-1e-9)/bw));hd[i]++}
+ const ymax=Math.max(...hb,...hd)/r.N*1.12;xmax=nb*bw;const {X,Y}=frame(svg,W,H,m,[0,xmax],[0,ymax],'decision time (ms)','fraction of sites');
+ const step=(h,cls)=>{let d=`M${X(0)},${Y(0)}`;h.forEach((c,i)=>{const y=Y(c/r.N);d+=`L${X(i*bw)},${y}L${X((i+1)*bw)},${y}`});d+=`L${X(nb*bw)},${Y(0)}Z`;el('path',{d,class:cls},svg)};
+ step(hd,'hd');step(hb,'hb');
+ el('text',{x:m.l+10,y:m.t+4,class:'bt'},svg,'bright sites');el('text',{x:m.l+10,y:m.t+20,class:'dtx'},svg,'dark sites');
+ if(r.Tfix&&r.Tfix<=xmax){el('line',{x1:X(r.Tfix),x2:X(r.Tfix),y1:m.t,y2:H-m.b,class:'fx'},svg);el('text',{x:X(r.Tfix)+5,y:m.t+40,class:'fxt'},svg,'fixed window')}
+ if(r.arrayWait<=xmax){el('line',{x1:X(r.arrayWait),x2:X(r.arrayWait),y1:m.t,y2:H-m.b,class:'aw'},svg);
+  const right=X(r.arrayWait)>W-170;el('text',{x:X(r.arrayWait)+(right?-5:5),y:m.t+58,'text-anchor':right?'end':'start',class:'awt'},svg,`${M.toLocaleString()} sites all done`)}}
+const f2=v=>v<10?v.toFixed(2):v.toFixed(1), sp=v=>v.toFixed(1)+'×';
+function run(){const s=document.getElementById('status');s.textContent='Simulating…';
+ setTimeout(()=>{const p={lb:st.lb,lbg:st.lbg,dt:st.dt,sig:st.sig,alpha:ALPHAS[st.ai],M:SIZES[st.mi],seed};
+  const r=simulate(p),M=p.M;drawWalk(r,p);drawHist(r,p,M);
+  const errTxt=(r.errFloor?'below ':'')+(r.errFloor?(0.5/r.N):r.errS).toExponential(1).replace('e-','×10⁻');
+  const rows=[['Adaptive readout: average decision time',f2(r.meanAll)+' ms'],
+   ['  bright sites / dark sites',f2(r.meanB)+' / '+f2(r.meanD)+' ms'],
+   ['Adaptive readout: measured error per site',errTxt],
+   ['Fixed window with the same error',r.Tfix?f2(r.Tfix)+' ms':'longer than '+r.Tmax+' ms'],
+   ['Average speedup from adaptive readout',r.Tfix?sp(r.Tfix/r.meanAll):'—'],
+   [`Time until all ${M.toLocaleString()} sites decide`,f2(r.arrayWait)+' ms'],
+   ['Sites still undecided at the fixed-window time',r.Tfix?(100*r.fracOver).toFixed(1)+'%':'—']];
+  const tb=document.getElementById('results');tb.innerHTML='';for(const [a,b] of rows){const tr=document.createElement('tr');tr.innerHTML=`<td>${a.replace(/^  /,'&emsp;')}</td><td>${b}</td>`;tb.appendChild(tr)}
+  const v=document.getElementById('verdict');
+  if(!r.Tfix){v.innerHTML='With these settings, even a 30 ms fixed window cannot reach the target error. Raise the detected photon rate or relax the target.'}
+  else{const ratio=r.arrayWait/r.Tfix;
+   v.innerHTML=`Adaptive readout decides the average site <b>${sp(r.Tfix/r.meanAll)} sooner</b> than a ${f2(r.Tfix)} ms fixed window. `+
+   (ratio>1?`But an array of ${M.toLocaleString()} sites waits ${f2(r.arrayWait)} ms for its slowest site, <b>${sp(ratio)} longer</b> than the fixed window.`
+    :`An array of ${M.toLocaleString()} sites still finishes in ${f2(r.arrayWait)} ms, <b>${sp(1/ratio)} faster</b> than the fixed window.`)}
+  s.textContent='';},20)}
+run();
+
+</script>
+</body>
+</html>
