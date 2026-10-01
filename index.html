@@ -180,12 +180,12 @@ function frame(svg,W,H,m,xd,yd,xl,yl,yt){svg.innerHTML='';
  el('text',{x:(m.l+W-m.r)/2,y:H-6,'text-anchor':'middle',class:'lab'},svg,xl);
  el('text',{x:14,y:(m.t+H-m.b)/2,'text-anchor':'middle',class:'lab',transform:`rotate(-90 14 ${(m.t+H-m.b)/2})`},svg,yl);
  return{X,Y}}
-function drawWalk(r,p){const svg=document.getElementById('walk'),W=720,H=300,m={l:52,r:18,t:16,b:40};
+function drawWalk(r,p){const svg=document.getElementById('walk'),W=720,H=300,m={l:52,r:100,t:16,b:40};
  let tmax=0;for(const t of r.traces)tmax=Math.max(tmax,(t.pts.length-1)*p.dt);
  tmax=Math.max(tmax,(r.Tfix||0)*1.1);tmax=Math.min(Math.max(tmax,1),r.Tmax);
  const yd=[r.B-1.5,r.A+1.5];const {X,Y}=frame(svg,W,H,m,[0,tmax],yd,'time (ms)','evidence for bright (log likelihood ratio)');
- el('line',{x1:m.l,x2:W-m.r,y1:Y(r.A),y2:Y(r.A),class:'bnd'},svg);el('text',{x:W-m.r-4,y:Y(r.A)-6,'text-anchor':'end',class:'bt'},svg,'decide bright');
- el('line',{x1:m.l,x2:W-m.r,y1:Y(r.B),y2:Y(r.B),class:'bnd'},svg);el('text',{x:W-m.r-4,y:Y(r.B)+15,'text-anchor':'end',class:'dtx'},svg,'decide dark');
+ el('line',{x1:m.l,x2:W-m.r,y1:Y(r.A),y2:Y(r.A),class:'bnd'},svg);el('text',{x:W-m.r+8,y:Y(r.A)+4,'text-anchor':'start',class:'bt'},svg,'decide bright');
+ el('line',{x1:m.l,x2:W-m.r,y1:Y(r.B),y2:Y(r.B),class:'bnd'},svg);el('text',{x:W-m.r+8,y:Y(r.B)+4,'text-anchor':'start',class:'dtx'},svg,'decide dark');
  for(const t of r.traces){const d=t.pts.map((v,i)=>`${i?'L':'M'}${X(i*p.dt).toFixed(1)},${Y(Math.max(yd[0],Math.min(yd[1],v))).toFixed(1)}`).join('');el('path',{d,class:t.bright?'tb':'td'},svg)}
  if(r.Tfix&&r.Tfix<=tmax){el('line',{x1:X(r.Tfix),x2:X(r.Tfix),y1:m.t,y2:H-m.b,class:'fx'},svg);el('text',{x:X(r.Tfix)-6,y:Y((r.A+r.B)/2)+4,'text-anchor':'end',class:'fxt'},svg,'fixed window')}}
 function drawHist(r,p,M){const svg=document.getElementById('hist'),W=720,H=280,m={l:52,r:18,t:22,b:40};
